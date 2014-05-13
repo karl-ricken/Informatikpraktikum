@@ -35,8 +35,10 @@ public class DFAVisitor extends RegexBaseVisitor<StringInt>{
 	public boolean first = true;
 //	Queue<RuleContext> warteschlange;
 	private void setChar(){
-		index ++;
-		currentChar = "" + Text.charAt(index);
+		if(index<Text.length()-1){
+			index ++;
+			currentChar = "" + Text.charAt(index);
+		}
 	}
 	public StringInt start(ParseTree ps, String text){
 		this.Text = text;
