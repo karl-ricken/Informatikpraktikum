@@ -40,7 +40,7 @@ public class DFAVisitor extends RegexBaseVisitor<MatchingResult>{
 		while(index<Text.length() && newSet.size()>0){
 			execute();
 		}
-		if(match!=null){
+		if(match!=null && (match.length>0 && index<=Text.length())){	//<= da index erhoeht wurde
 			return createMatch(match.index, match.length);
 		}
 		else {

@@ -6,29 +6,20 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 public class BNFAVisitor extends RegexBaseVisitor<MatchingResult>{
-	class Match{
-		int index, length;
-		public Match(int index, int length){
-			this.index = index;
-			this.length = length;
-		}
-	}
-	
-	class varInt {
+	class VarInt {
 		ParseTree knoten;
 		int popPos;
 		MatchingResult mr = null;
 		
-		public varInt(ParseTree var, int i){
+		public VarInt(ParseTree var, int i){
 			this.knoten = var;
 			this.popPos = i;
 		}
-		public varInt(MatchingResult mr){
+		public VarInt(MatchingResult mr){
 			this.mr = mr;
 		}
 	}
-	Match match;
-	public Stack<varInt> stack = new Stack<>();
+	public Stack<VarInt> stack = new Stack<VarInt>();
 	public String Text;
 	public ParseTree tree;
 	public String currentChar;
@@ -54,8 +45,8 @@ public class BNFAVisitor extends RegexBaseVisitor<MatchingResult>{
 				pos++;
 				result = start(ps,text);
 			}else{
-				varInt current = stack.pop();
-				if(current.mr!=null){
+				VarInt current = stack.pop();
+				if(current.mr!=null && (current.mr.getMatchedString().length()>0 && index<=text.length())){
 					return current.mr;
 				}
 				index = current.popPos;
@@ -131,7 +122,7 @@ public class BNFAVisitor extends RegexBaseVisitor<MatchingResult>{
 		RegexParser.KonkatenationContext kc = (RegexParser.KonkatenationContext) ctx.parent;
 		int nextIndex = kc.children.indexOf(ctx)+1;
 		if(kc.children.size()>nextIndex){
-			varInt current = new varInt(kc.children.get(nextIndex),index);
+			VarInt current = new VarInt(kc.children.get(nextIndex),index);
 			stack.push(current);
 		}
 		else {
@@ -145,13 +136,13 @@ public class BNFAVisitor extends RegexBaseVisitor<MatchingResult>{
 					kcNew = kcNew.parent;
 				}
 				if(kcNew instanceof RegexParser.StartContext){
-					stack.push(new varInt(createMatch(pos,index-pos)));
+					stack.push(new VarInt(createMatch(pos,index-pos)));
 					bedingung = false;
 				} else if(kcNew instanceof RegexParser.KonkatenationContext){
 					RegexParser.KonkatenationContext parent = (RegexParser.KonkatenationContext) kcNew;
 					int i = parent.children.indexOf(kcOld)+1;
 					if(parent.children.size()>i){
-						varInt current = new varInt(parent.children.get(i),index);
+						VarInt current = new VarInt(parent.children.get(i),index);
 						stack.push(current);
 						bedingung = false;
 					}
@@ -168,7 +159,7 @@ public class BNFAVisitor extends RegexBaseVisitor<MatchingResult>{
 	@Override public MatchingResult visitAlternation(@NotNull RegexParser.AlternationContext ctx) {
 		int kinder = ctx.getChildCount();
 		for(int i = kinder-1; i>0; i--){
-			varInt current = new varInt(ctx.getChild(i),index);
+			VarInt current = new VarInt(ctx.getChild(i),index);
 			stack.push(current);
 		}
 		
