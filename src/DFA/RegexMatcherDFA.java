@@ -8,8 +8,11 @@ public class RegexMatcherDFA {
 	public static void main (String[] args){
 		if (args.length == 2) {
 			match(args[0], args[1]).print();
-		} else { // alt:match("(ab)*", "cababc").print();
-			match("(ab)*abc", "cabababc").print();
+		} else {
+			match("(ab)*", "cababc").print();
+//			match("(abc|acb|acd|acda)", "abbacdacf").print();
+//			match("(ab)*abc", "bbbabababababababababababababcabab").print();
+//			match("(ab)*c", "cabc").print();
 		}	
 	}
 	

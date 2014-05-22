@@ -26,14 +26,6 @@ public class RegexBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements 
 	 * The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.
 	 */
-	@Override public T visitAusdruck(@NotNull RegexParser.AusdruckContext ctx) { return visitChildren(ctx); }
-
-	/**
-	 * {@inheritDoc}
-	 * <p/>
-	 * The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.
-	 */
 	@Override public T visitKonkatenation(@NotNull RegexParser.KonkatenationContext ctx) { return visitChildren(ctx); }
 
 	/**

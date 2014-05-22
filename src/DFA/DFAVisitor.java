@@ -6,17 +6,7 @@ import java.util.Set;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
-
-import DFA.RegexParser.KonkatenationContext;
-
-public class DFAVisitor extends RegexBaseVisitor<StringInt>{
-	/*ausdruck:	alternation*				;
-	alternation:	konkatenation ('|' konkatenation)*	;
-	konkatenation:	(VAR | kleenestern | klammerung)+	;
-	kleenestern:	(VAR | klammerung)'*'			;
-	klammerung:	'(' ausdruck ')'			;
-
-	VAR:		[a-z]					;*/
+public class DFAVisitor extends RegexBaseVisitor<MatchingResult>{
 	class Match{
 		int index, length;
 		public Match(int index, int length){
@@ -33,39 +23,37 @@ public class DFAVisitor extends RegexBaseVisitor<StringInt>{
 	public int index = -1;
 	public int pos = 0;
 	public boolean first = true;
-//	Queue<RuleContext> warteschlange;
 	private void setChar(){
 		if(index<Text.length()-1){
 			index ++;
 			currentChar = "" + Text.charAt(index);
+		} else {
+			index ++;
 		}
 	}
-	public StringInt start(ParseTree ps, String text){
+	private MatchingResult createMatch(int index, int length){
+		return new MatchingResult(index, index>=0 ? Text.substring(index, index+length) : "");
+	}
+	public MatchingResult start(ParseTree ps, String text){
 		this.Text = text;
 		visit(ps);
 		while(index<Text.length() && newSet.size()>0){
 			execute();
 		}
 		if(match!=null){
-			StringInt res = new StringInt(true);
-			res.index = pos;
-			res.length = index - pos;
-			return res;
+			return createMatch(match.index, match.length);
 		}
 		else {
 			index = pos;
 			pos++;
-			if(index<Text.length()-2){
+			if(index<Text.length()-1){
 				return start(ps, text);
 			} else {
-				StringInt res = new StringInt(false);
-				res.index = pos;
-				res.length = index - pos;
-				return res;
+				return createMatch(-1,0);
 			}
 		}
 	}
-	public StringInt execute(){
+	public void execute(){
 		currentSet.clear();
 		currentSet.addAll(newSet);
 		newSet.clear();
@@ -76,7 +64,7 @@ public class DFAVisitor extends RegexBaseVisitor<StringInt>{
 				visit(rc);
 			}
 			else {
-				RegexParser.KonkatenationContext kc = (KonkatenationContext) rc;
+				RegexParser.KonkatenationContext kc = (RegexParser.KonkatenationContext) rc;
 				int nextIndex = kc.children.indexOf(vc)+1;
 				if(kc.children.size()>nextIndex){
 					visit(kc.children.get(nextIndex));
@@ -87,16 +75,15 @@ public class DFAVisitor extends RegexBaseVisitor<StringInt>{
 					while(bedingung){
 						RuleContext kcOld = kcNew;
 						kcNew = kcNew.parent;
-						while(!(kcNew instanceof RegexParser.KonkatenationContext) && !(kcNew instanceof RegexParser.StartContext)){
+						while(!(kcNew instanceof RegexParser.KonkatenationContext) && !(kcNew instanceof RegexParser.StartContext) && !(kcNew instanceof RegexParser.KleenesternContext)){
 							kcOld = kcNew;
 							kcNew = kcNew.parent;
 						}
 						if(kcNew instanceof RegexParser.StartContext){
 							match = new Match(pos, index-pos);
-							//TODO Match gefunden/generieren!
 							bedingung = false;
 						} else if(kcNew instanceof RegexParser.KonkatenationContext){
-							RegexParser.KonkatenationContext parent = (KonkatenationContext) kcNew;
+							RegexParser.KonkatenationContext parent = (RegexParser.KonkatenationContext) kcNew;
 							int i = parent.children.indexOf(kcOld)+1;
 							if(parent.children.size()>i){
 								visit(parent.children.get(i));
@@ -110,37 +97,29 @@ public class DFAVisitor extends RegexBaseVisitor<StringInt>{
 				}
 			}
 		}
-		
-		return null;
 	}
-	@Override public StringInt visitStart(@NotNull RegexParser.StartContext ctx) {
+	@Override public MatchingResult visitStart(@NotNull RegexParser.StartContext ctx) {
 		setChar();
-		visit(ctx.ausdruck());
-//		execute();
+		visit(ctx.alternation());
 		return null;
 	}
-	@Override public StringInt visitKlammerung(@NotNull RegexParser.KlammerungContext ctx) {
-			return visit(ctx.ausdruck());
+	@Override public MatchingResult visitKlammerung(@NotNull RegexParser.KlammerungContext ctx) {
+			return visit(ctx.alternation());
 		}
-	@Override public StringInt visitAusdruck(@NotNull RegexParser.AusdruckContext ctx) {
-		for(RegexParser.AlternationContext o : ctx.alternation()){
-			visit(o);
-		}
-		return null;
-	}
-	@Override public StringInt visitVariable(@NotNull RegexParser.VariableContext ctx) {
+	
+	@Override public MatchingResult visitVariable(@NotNull RegexParser.VariableContext ctx) {
 		if(ctx.VAR().getText().equals(currentChar)){
 			newSet.add(ctx);
 		}
 		return null;
 	}
-	@Override public StringInt visitKonkatenation(@NotNull RegexParser.KonkatenationContext ctx) {
+	@Override public MatchingResult visitKonkatenation(@NotNull RegexParser.KonkatenationContext ctx) {
 		visit(ctx.getChild(0));
 		return null;
 	}
-	@Override public StringInt visitKleenestern(@NotNull RegexParser.KleenesternContext ctx) {
+	@Override public MatchingResult visitKleenestern(@NotNull RegexParser.KleenesternContext ctx) {
 		visit(ctx.getChild(0));
-		RegexParser.KonkatenationContext kc = (KonkatenationContext) ctx.parent;
+		RegexParser.KonkatenationContext kc = (RegexParser.KonkatenationContext) ctx.parent;
 		int nextIndex = kc.children.indexOf(ctx)+1;
 		if(kc.children.size()>nextIndex){
 			visit(kc.children.get(nextIndex));
@@ -157,10 +136,9 @@ public class DFAVisitor extends RegexBaseVisitor<StringInt>{
 				}
 				if(kcNew instanceof RegexParser.StartContext){
 					match = new Match(pos, index-pos);
-					//TODO Match gefunden/generieren!
 					bedingung = false;
 				} else if(kcNew instanceof RegexParser.KonkatenationContext){
-					RegexParser.KonkatenationContext parent = (KonkatenationContext) kcNew;
+					RegexParser.KonkatenationContext parent = (RegexParser.KonkatenationContext) kcNew;
 					int i = parent.children.indexOf(kcOld)+1;
 					if(parent.children.size()>i){
 						visit(parent.children.get(i));
@@ -171,7 +149,7 @@ public class DFAVisitor extends RegexBaseVisitor<StringInt>{
 		}
 		return null;
 	}
-	@Override public StringInt visitAlternation(@NotNull RegexParser.AlternationContext ctx) {
+	@Override public MatchingResult visitAlternation(@NotNull RegexParser.AlternationContext ctx) {
 		for(RegexParser.KonkatenationContext o : ctx.konkatenation()){
 			visit(o);
 		}

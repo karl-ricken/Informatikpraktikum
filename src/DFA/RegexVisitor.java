@@ -19,13 +19,6 @@ public interface RegexVisitor<T> extends ParseTreeVisitor<T> {
 	T visitKlammerung(@NotNull RegexParser.KlammerungContext ctx);
 
 	/**
-	 * Visit a parse tree produced by {@link RegexParser#ausdruck}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAusdruck(@NotNull RegexParser.AusdruckContext ctx);
-
-	/**
 	 * Visit a parse tree produced by {@link RegexParser#konkatenation}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

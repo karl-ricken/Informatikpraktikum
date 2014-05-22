@@ -2,18 +2,18 @@ package DFA;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 public class DFAEngine {
-
+	ParseTree tree;
+	String text;
 	public DFAEngine(ParseTree tree, String text) {
-		DFAVisitor dfa = new DFAVisitor();
-		StringInt res = dfa.start(tree, text);
-		if(res==null)	System.out.println("Jeffrey hat alles falsch gemacht!");
-		System.out.println("Index: " + res.index + "; Lenght: " + res.length);
+		this.tree = tree;
+		this.text = text;
 		// implement constructor
 	}
 
-	public MatchingResult run() {	
+	public MatchingResult run() {
+		DFAVisitor v = new DFAVisitor();
+		return v.start(tree, text);
 		// to implement (replace dummy return)
-		return new MatchingResult(-1,"");
 	}
 		
 
