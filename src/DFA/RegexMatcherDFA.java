@@ -1,5 +1,9 @@
 package DFA;
 
+import general.MatchingResult;
+import general.RegexLexer;
+import general.RegexParser;
+
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 

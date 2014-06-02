@@ -1,4 +1,4 @@
-package BNFA;
+package general;
 public class MatchingResult {
 
 	private int startingPosition;

@@ -1,5 +1,6 @@
 package DFA;
 import static org.junit.Assert.*;
+import general.MatchingResult;
 
 import org.junit.Test;
 

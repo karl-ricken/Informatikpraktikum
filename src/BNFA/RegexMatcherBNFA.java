@@ -1,4 +1,8 @@
 package BNFA;
+import general.MatchingResult;
+import general.RegexLexer;
+import general.RegexParser;
+
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -8,7 +12,7 @@ public class RegexMatcherBNFA {
 		if (args.length == 2) {
 			match(args[0], args[1]).print();
 		} else {
-			match("k(ab|cd)*", "zkabcdabcdmz").print();
+			match("(ab|c*d)*", "zzzababcdccdabccccd").print();
 //			match("(abc|acb|acd|acda)", "abbacdacf").print();
 //			match("(ab)*abc", "bbbabababababababababababababcabab").print();
 //			match("(ab)*c", "cabc").print();

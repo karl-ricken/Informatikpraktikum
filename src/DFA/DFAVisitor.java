@@ -1,5 +1,9 @@
 package DFA;
 
+import general.MatchingResult;
+import general.RegexBaseVisitor;
+import general.RegexParser;
+
 import java.util.HashSet;
 import java.util.Set;
 

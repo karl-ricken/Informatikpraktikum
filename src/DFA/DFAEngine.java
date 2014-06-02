@@ -1,4 +1,6 @@
 package DFA;
+import general.MatchingResult;
+
 import org.antlr.v4.runtime.tree.ParseTree;
 
 public class DFAEngine {
